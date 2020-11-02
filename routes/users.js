@@ -6,15 +6,16 @@ const authenticate = require('../authenticate');
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-    if (req.user.admin) {
-        return User.find();
-    } else {
-        const err = new Error('You are not an admin!');
-        err.status = 403;
-        return next(err);
-    }
-});
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    User.find()
+    .then(users => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(users);
+    })
+    .catch(err => next(err));
+  }); 
+  
 
 router.post('/signup', (req, res) => {
     User.register(
